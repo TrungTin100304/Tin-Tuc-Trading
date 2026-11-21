@@ -46,12 +46,12 @@ def main():
             and events is not None:
         msg = bot.day_digest()
         if wins is not None:
-            todays = [w for w in wins if w[0].date() == now.date()]
-            msg += "\n\n🛠 <b>FTMO bảo trì hôm nay</b> (giờ VN)\n"
+            todays = [w for w in wins if w[1] > now and (w[0].date() - now.date()).days <= 2]  # chưa kết thúc, trong 3 ngày tới
+            msg += "\n\n🛠 <b>FTMO bảo trì sắp tới</b> (giờ VN)\n"
             if not wins:
                 msg += "Không đọc được lịch tự động, xem bài gốc: " + url
             else:
-                msg += "\n".join("• " + maint_line(*w) for w in todays) if todays else "Không có lịch bảo trì."
+                msg += "\n".join("• " + maint_line(*w) for w in todays) if todays else "Không có lịch bảo trì sắp tới."
             if todays:
                 msg += f'\n<a href="{url}">Bài gốc</a>'
         bot.send(msg)
