@@ -35,7 +35,9 @@ def main():
         print("Lỗi lấy lịch kinh tế:", e, file=sys.stderr)
     try:
         text, url = bot.fetch_latest_ftmo()
-        _, wins, _ = bot.parse_ftmo_maintenance(text)
+        _, wins, raw_sec = bot.parse_ftmo_maintenance(text)
+        if not wins:
+            print("CẢNH BÁO: không đọc được khung giờ bảo trì. Đoạn gốc:", raw_sec[:300], file=sys.stderr)
     except Exception as e:
         print("Lỗi lấy lịch FTMO:", e, file=sys.stderr)
 
@@ -46,7 +48,10 @@ def main():
         if wins is not None:
             todays = [w for w in wins if w[0].date() == now.date()]
             msg += "\n\n🛠 <b>FTMO bảo trì hôm nay</b> (giờ VN)\n"
-            msg += "\n".join("• " + maint_line(*w) for w in todays) if todays else "Không có lịch bảo trì."
+            if not wins:
+                msg += "Không đọc được lịch tự động, xem bài gốc: " + url
+            else:
+                msg += "\n".join("• " + maint_line(*w) for w in todays) if todays else "Không có lịch bảo trì."
             if todays:
                 msg += f'\n<a href="{url}">Bài gốc</a>'
         bot.send(msg)

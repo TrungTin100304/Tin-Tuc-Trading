@@ -155,7 +155,7 @@ def week_digest():
 
 
 # ---------------------------------------------------------------- FTMO
-DATE_RE = re.compile(r"(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day,?\s*(\d{1,2})\s+([A-Za-z]{3})[a-z]*\s+(\d{4})")
+DATE_RE = re.compile(r"(?:Mon|Tues|Wednes|Thurs|Fri|Satur|Sun)day\s*,?\s*(\d{1,2})\s+([A-Za-z]{3})[a-z]*\s+(\d{4})")
 TIME_RE = re.compile(r"(\d{1,2}:\d{2})\s*(?:and|to|[-–—])?\s*(\d{1,2}:\d{2})")
 MONTHS = {m: i for i, m in enumerate(
     ["jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec"], 1)}
@@ -166,7 +166,8 @@ def html_to_text(h):
     h = re.sub(r"(?i)<br\s*/?>|</(p|li|h\d|div|tr)>", "\n", h)
     h = re.sub(r"<[^>]+>", " ", h)
     h = html.unescape(h)
-    h = re.sub(r"[*#_`]+", "", h)  # bỏ ký hiệu markdown (khi đọc qua r.jina.ai)
+    h = re.sub(r"[*#_`]+", "", h)
+    h = re.sub(r"\s+([,.;:])", r"\1", h)  # "Saturday , 21" -> "Saturday, 21"  # bỏ ký hiệu markdown (khi đọc qua r.jina.ai)
     return re.sub(r"[ \t\r\f\v]+", " ", h)
 
 
