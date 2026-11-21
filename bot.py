@@ -57,6 +57,12 @@ ALERT_BEFORE_MIN = int(os.environ.get("ALERT_BEFORE_MIN", "30"))  # cảnh báo 
 CURRENCIES = {c.strip() for c in os.environ.get("CURRENCIES", "USD").split(",")}
 MIN_IMPACT = os.environ.get("MIN_IMPACT", "High")             # High | Medium
 STATE_FILE = Path(os.environ.get("STATE_FILE", "state.json"))
+# Tin vĩ mô hay làm crypto biến động mạnh: lấy cả tin mức Medium nếu tên khớp từ khóa (USD)
+CRYPTO_MODE = os.environ.get("CRYPTO_MODE", "1") == "1"
+CRYPTO_KEYWORDS = tuple(k.strip().lower() for k in os.environ.get(
+    "CRYPTO_KEYWORDS",
+    "CPI,PPI,PCE,FOMC,Federal Funds,Fed Chair,Powell,Non-Farm,Unemployment Rate,"
+    "Average Hourly,JOLTS,ISM,Retail Sales,GDP,Treasury,Fed ,Employment Change").split(",") if k.strip())
 
 FF_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.json"
 FTMO_LIST = "https://ftmo.com/en/trading-updates/"
@@ -118,7 +124,10 @@ def parse_events(raw):
     for e in raw:
         if e.get("country") not in CURRENCIES:
             continue
-        if order.get(e.get("impact"), -1) < order.get(MIN_IMPACT, 2):
+        lvl = order.get(e.get("impact"), -1)
+        crypto_hit = (CRYPTO_MODE and e.get("country") == "USD" and lvl >= 1
+                      and any(k in e.get("title", "").lower() for k in CRYPTO_KEYWORDS))
+        if lvl < order.get(MIN_IMPACT, 2) and not crypto_hit:
             continue
         try:
             dt = datetime.fromisoformat(e["date"]).astimezone(TZ)
